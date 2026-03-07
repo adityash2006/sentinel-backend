@@ -1,35 +1,26 @@
-// import express from "express";
+import express from "express";
 import {client} from "./db/databs.js";
-
+import cors from "cors"
 import { userRouter } from "./routes/auth/user.js";
-async function createUser() {
-    await client.user.create({
-    data:{
-        name:"adgitya",
-        email:"aditygg@gmail.com",
-        password:"mai ku btyao"
-    }
+import { featureRouter } from "./routes/features/v1.js";
+
+
+const app=express();
+app.use(cors());
+app.use(express.json());
+
+app.get("/",(req,res)=>{
+    res.json({
+        "server":"is working bro"
+    })
 });
-}
 
-createUser();
+app.use("/v1",featureRouter);
+app.use("/user",userRouter);
 
-
-// const app=express();
-// app.use(express.json());
-
-// app.get("/",(req,res)=>{
-//     res.json({
-//         "server":"is working bro"
-//     })
-// });
-
-
-// app.use("/user",userRouter);
-
-// app.listen(4000,()=>{
-//     console.log("server listenenig at port 4k ");
-// })
+app.listen(4000,()=>{
+    console.log("server listenenig at port 4k ");
+})
 
 
 
