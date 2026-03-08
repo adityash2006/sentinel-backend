@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt";
 import {client} from "../../db/databs.js"
 import "dotenv/config"
-import type { NextFunction, Request, Response } from "express";
+
 const userRouter=Router();
 
 userRouter.post("/signup",async  (req, res) => {
