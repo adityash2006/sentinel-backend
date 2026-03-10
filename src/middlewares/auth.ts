@@ -20,3 +20,6 @@ export function autho(req:Request,res:Response,next:NextFunction){
     req.userId=decoded.userId;
     next();
 }
+
+
+

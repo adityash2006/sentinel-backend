@@ -6,7 +6,6 @@ import "dotenv/config";
 const userRouter = Router();
 userRouter.post("/signup", async (req, res) => {
     const { name, email, password } = req.body;
-    console.log(name);
     try {
         const existingUser = await client.user.findFirst({
             where: {
@@ -25,8 +24,11 @@ userRouter.post("/signup", async (req, res) => {
                 password: pass
             }
         });
+        const id = user.id;
+        const token = jwt.sign({ userId: id }, process.env.JWTSECRET);
         res.status(201).json({
-            message: "user created successfully"
+            message: "user created successfully",
+            token
         });
     }
     catch (err) {
