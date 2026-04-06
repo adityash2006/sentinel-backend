@@ -1,8 +1,16 @@
 import { Router, type NextFunction } from "express";
 import { autho } from "../../middlewares/auth.js";
 import  jwt from "jsonwebtoken";
-
+import { analyzeResume } from "../../utils/ai-analyzer.js";
+import { extractText } from "../../utils/extractText.js";
+import multer from "multer"
 export const featureRouter=Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }
+})
+
 
 featureRouter.get("/dashboard",autho,(req,res)=>{
     res.status(201).json({
@@ -19,8 +27,6 @@ featureRouter.get("/token",(req,res,next:NextFunction)=>{
         })
     }
     try{
-
-    
     const decoded = jwt.verify(token!, process.env.JWTSECRET!);
     if(!decoded){
         res.status(402).json({
@@ -37,4 +43,32 @@ featureRouter.get("/token",(req,res,next:NextFunction)=>{
             message:"invalid or no token"
         })
     }
+})
+
+
+featureRouter.post("/analyze-resume",upload.single("resume"),async (req,res)=>{
+    try {
+        const file = req.file;
+        const jobDescription = req.body.jobDescription || "";
+        if(!file)  {res.status(401).json({
+            message:"file wasnt provided "
+        });
+        return ;
+    }
+        const text = await extractText(file);
+
+        const result= await analyzeResume(text!,jobDescription);
+        console.log(result);
+
+     res.status(201).json({
+        message:result
+    })
+    
+    } catch (error) {
+        console.log(error);
+        res.status(401).json({
+            message:"resume parsing failed :( "
+        })
+    }
+    
 })

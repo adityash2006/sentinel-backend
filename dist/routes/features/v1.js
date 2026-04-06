@@ -1,7 +1,14 @@
 import { Router } from "express";
 import { autho } from "../../middlewares/auth.js";
 import jwt from "jsonwebtoken";
+import { analyzeResume } from "../../utils/ai-analyzer.js";
+import { extractText } from "../../utils/extractText.js";
+import multer from "multer";
 export const featureRouter = Router();
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 }
+});
 featureRouter.get("/dashboard", autho, (req, res) => {
     res.status(201).json({
         message: "you are logged in"
@@ -30,6 +37,30 @@ featureRouter.get("/token", (req, res, next) => {
         console.log(err);
         res.status(400).json({
             message: "invalid or no token"
+        });
+    }
+});
+featureRouter.post("/analyze-resume", upload.single("resume"), async (req, res) => {
+    try {
+        const file = req.file;
+        const jobDescription = req.body.jobDescription || "";
+        if (!file) {
+            res.status(401).json({
+                message: "file wasnt provided "
+            });
+            return;
+        }
+        const text = await extractText(file);
+        const result = await analyzeResume(text, jobDescription);
+        console.log(result);
+        res.status(201).json({
+            message: result
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(401).json({
+            message: "resume parsing failed :( "
         });
     }
 });
