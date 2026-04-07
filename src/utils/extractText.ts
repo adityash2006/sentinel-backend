@@ -8,7 +8,7 @@ export async function extractText(file:Express.Multer.File ): Promise<string | u
     const parser = new PDFParse({ data:file.buffer });
 
     const result = await parser.getText();
-    return result.text
+    return result.text;
   }
 
   if (file.mimetype.includes("word")) {

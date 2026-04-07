@@ -7,7 +7,7 @@ const google = createGoogleGenerativeAI({
     apiKey:process.env.GEMINI_KEY!
 });
 
-const model = google('gemini-2.5-flash');
+const model = google('gemini-2.5-flash-lite');
 export async function analyzeResume(text: string, jd?: string) {
   
  const hasJD = jd && jd.trim().length > 0;
@@ -47,6 +47,7 @@ ${text}
   match_percentage: z.number().min(0).max(100),
   strengths: z.array(z.string()),
   improvements: z.array(z.string()),
+  
     }),
   }),
   prompt,

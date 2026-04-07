@@ -13,7 +13,7 @@ export function autho(req, res, next) {
             message: "dont to this token thingy "
         });
     }
-    //@ts-ignore
+    //    @ts-ignore
     req.userId = decoded.userId;
     next();
 }

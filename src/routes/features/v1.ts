@@ -4,6 +4,9 @@ import  jwt from "jsonwebtoken";
 import { analyzeResume } from "../../utils/ai-analyzer.js";
 import { extractText } from "../../utils/extractText.js";
 import multer from "multer"
+import {client} from "../../db/databs.js"
+import { id } from "zod/v4/locales";
+
 export const featureRouter=Router();
 
 const upload = multer({
@@ -12,9 +15,14 @@ const upload = multer({
 })
 
 
-featureRouter.get("/dashboard",autho,(req,res)=>{
+featureRouter.get("/dashboard",autho,async (req,res)=>{
+    const user=await client.user.findUnique({
+           //@ts-ignore
+        where:{id:req.userId}});
+
     res.status(201).json({
-        message:"you are logged in"
+        message:"you are logged in",
+        name:user?.name
     })
     
 })

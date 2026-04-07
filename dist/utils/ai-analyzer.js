@@ -5,7 +5,7 @@ import { z } from 'zod';
 const google = createGoogleGenerativeAI({
     apiKey: process.env.GEMINI_KEY
 });
-const model = google('gemini-2.5-flash');
+const model = google('gemini-2.5-flash-lite');
 export async function analyzeResume(text, jd) {
     const hasJD = jd && jd.trim().length > 0;
     const machine = `you are a strict ATS system

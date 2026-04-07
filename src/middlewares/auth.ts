@@ -16,7 +16,7 @@ export function autho(req:Request,res:Response,next:NextFunction){
             message:"dont to this token thingy "
         })
     }
-   //@ts-ignore
+//    @ts-ignore
     req.userId=decoded.userId;
     next();
 }
