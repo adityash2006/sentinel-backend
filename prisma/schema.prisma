@@ -9,8 +9,55 @@ datasource db {
 }
 
 model User {
-  id Int @default(autoincrement()) @id
+  id String @default(uuid()) @id
   name String 
   password String 
   email String @unique 
+
+  reports   ScamReport[]
+  votes     ReportVote[]
 }
+
+model ScamReport {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String
+
+  scamPlatform  String?   
+  companyName   String?   
+  contactInfo   String?   
+  evidenceUrl   String?   
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+
+  upvotes       Int      @default(0)
+  downvotes     Int      @default(0)
+  votes         ReportVote[]
+
+  createdAt     DateTime @default(now())
+}
+
+
+model ReportVote {
+  id        Int      @id @default(autoincrement())
+
+  userId    String
+  reportId  Int
+
+  voteType  VoteType
+
+  user      User       @relation(fields: [userId], references: [id])
+  report    ScamReport @relation(fields: [reportId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, reportId])
+}
+
+enum VoteType{
+  UPVOTE
+  DOWNVOTE
+}
+
+ 

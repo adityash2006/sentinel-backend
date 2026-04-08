@@ -68,7 +68,9 @@ export const JsonNull = runtime.JsonNull;
  */
 export const AnyNull = runtime.AnyNull;
 export const ModelName = {
-    User: 'User'
+    User: 'User',
+    ScamReport: 'ScamReport',
+    ReportVote: 'ReportVote'
 };
 /**
  * Enums
@@ -85,6 +87,26 @@ export const UserScalarFieldEnum = {
     password: 'password',
     email: 'email'
 };
+export const ScamReportScalarFieldEnum = {
+    id: 'id',
+    title: 'title',
+    description: 'description',
+    scamPlatform: 'scamPlatform',
+    companyName: 'companyName',
+    contactInfo: 'contactInfo',
+    evidenceUrl: 'evidenceUrl',
+    userId: 'userId',
+    upvotes: 'upvotes',
+    downvotes: 'downvotes',
+    createdAt: 'createdAt'
+};
+export const ReportVoteScalarFieldEnum = {
+    id: 'id',
+    userId: 'userId',
+    reportId: 'reportId',
+    voteType: 'voteType',
+    createdAt: 'createdAt'
+};
 export const SortOrder = {
     asc: 'asc',
     desc: 'desc'
@@ -92,5 +114,9 @@ export const SortOrder = {
 export const QueryMode = {
     default: 'default',
     insensitive: 'insensitive'
+};
+export const NullsOrder = {
+    first: 'first',
+    last: 'last'
 };
 export const defineExtension = runtime.Extensions.defineExtension;

@@ -16,19 +16,23 @@ featureRouter.get("/dashboard", autho, async (req, res) => {
         //@ts-ignore
         where: { id: req.userId }
     });
+    if (!user)
+        res.status(401).json({
+            message: "you are not a user in db"
+        });
     res.status(201).json({
         message: "you are logged in",
         name: user?.name
     });
 });
 featureRouter.get("/token", (req, res, next) => {
-    const token = req.headers.authorization?.split(" ")[1];
-    if (!token) {
-        res.status(400).json({
-            message: "no token"
-        });
-    }
     try {
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            res.status(400).json({
+                message: "no token"
+            });
+        }
         const decoded = jwt.verify(token, process.env.JWTSECRET);
         if (!decoded) {
             res.status(402).json({
@@ -42,7 +46,7 @@ featureRouter.get("/token", (req, res, next) => {
     }
     catch (err) {
         console.log(err);
-        res.status(400).json({
+        res.status(403).json({
             message: "invalid or no token"
         });
     }
@@ -69,5 +73,17 @@ featureRouter.post("/analyze-resume", upload.single("resume"), async (req, res) 
         res.status(401).json({
             message: "resume parsing failed :( "
         });
+    }
+});
+featureRouter.get("/scam-reports", async (req, res) => {
+    try {
+        const reports = await client.scamReport.findMany({});
+        console.log(reports);
+        res.json({
+            reports
+        });
+    }
+    catch (error) {
+        console.log(error);
     }
 });

@@ -1,5 +1,4 @@
 import express from "express";
-import { client } from "./db/databs.js";
 import cors from "cors";
 import { userRouter } from "./routes/auth/user.js";
 import { featureRouter } from "./routes/features/v1.js";

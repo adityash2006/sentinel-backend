@@ -35,6 +35,7 @@ res.status(201).json({
 })
    
 }catch(err){
+    console.log(err);
     res.status(400).json({"message":"user signup failed"});
 }
 
