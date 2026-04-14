@@ -7,16 +7,16 @@ const google = createGoogleGenerativeAI({
     apiKey:process.env.GEMINI_KEY!
 });
 
-const model = google('gemini-2.5-flash-lite');
+const model = google('gemini-2.5-flash');
 export async function analyzeResume(text: string, jd?: string) {
   
  const hasJD = jd && jd.trim().length > 0;
 
-const machine = `you are a strict ATS system
+const machine = `you are a strict ATS system where people submits there resume text and you analyze them
  STRICT RULES:
  -you must provide an ats score out of 100 
-- strengths MUST have at least 2 points
-- improvements MUST have at least 3 points
+- strengths MUST have at least 2 points, and can surely have more than that 
+- improvements MUST have at least 3 points ,and can surely have more than that  
 - Do NOT leave any field empty`
 ;
 

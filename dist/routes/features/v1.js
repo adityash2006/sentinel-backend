@@ -5,7 +5,7 @@ import { analyzeResume } from "../../utils/ai-analyzer.js";
 import { extractText } from "../../utils/extractText.js";
 import multer from "multer";
 import { client } from "../../db/databs.js";
-import { id } from "zod/v4/locales";
+import "dotenv/config";
 export const featureRouter = Router();
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -75,15 +75,162 @@ featureRouter.post("/analyze-resume", upload.single("resume"), async (req, res) 
         });
     }
 });
-featureRouter.get("/scam-reports", async (req, res) => {
+featureRouter.post("/scam-reports", async (req, res) => {
+    const { token } = req.body;
+    const decodeduser = jwt.verify(token, process.env.JWTSECRET);
     try {
-        const reports = await client.scamReport.findMany({});
-        console.log(reports);
+        const reports = await client.scamReport.findMany({
+            include: {
+                user: {
+                    select: {
+                        name: true
+                    }
+                },
+                votes: {
+                    where: {
+                        //@ts-ignore
+                        userId: decodeduser.userId
+                    },
+                    select: {
+                        voteType: true
+                    }
+                }
+            }
+        });
+        const formattedReports = reports.map(report => ({
+            id: report.id,
+            title: report.title,
+            description: report.description,
+            userName: report.user.name,
+            upvotes: report.upvotes,
+            downvotes: report.downvotes,
+            user_vote: report.votes[0]?.voteType || null,
+            createdAt: report.createdAt
+        }));
         res.json({
-            reports
+            formattedReports
         });
     }
     catch (error) {
         console.log(error);
+    }
+});
+featureRouter.post("/vote", async (req, res) => {
+    const { reportId, token, voteType } = req.body;
+    const decodedUser = jwt.verify(token, process.env.JWTSECRET);
+    const userId = decodedUser.userId;
+    console.log("voting started");
+    try {
+        await client.$transaction(async (tx) => {
+            //  Check existing vote
+            const existingVote = await tx.reportVote.findUnique({
+                where: {
+                    userId_reportId: {
+                        userId,
+                        reportId,
+                    },
+                },
+            });
+            // Case: No existing vote → CREATE
+            if (!existingVote) {
+                await tx.reportVote.create({
+                    data: {
+                        userId,
+                        reportId,
+                        voteType,
+                    },
+                });
+                const updateData = {};
+                if (voteType === 'UPVOTE') {
+                    updateData.upvotes = { increment: 1 };
+                }
+                if (voteType === 'DOWNVOTE') {
+                    updateData.downvotes = { increment: 1 };
+                }
+                await tx.scamReport.update({
+                    where: { id: reportId },
+                    data: updateData,
+                });
+                return;
+            }
+            //  Case: Same vote → REMOVE (toggle off)
+            if (existingVote.voteType === voteType) {
+                await tx.reportVote.delete({
+                    where: {
+                        userId_reportId: {
+                            userId,
+                            reportId,
+                        },
+                    },
+                });
+                const updateData = {};
+                if (voteType === 'UPVOTE') {
+                    updateData.upvotes = { increment: 1 };
+                }
+                if (voteType === 'DOWNVOTE') {
+                    updateData.downvotes = { increment: 1 };
+                }
+                await tx.scamReport.update({
+                    where: { id: reportId },
+                    data: updateData,
+                });
+                return;
+            }
+            //  Case: Switch vote
+            await tx.reportVote.update({
+                where: {
+                    userId_reportId: {
+                        userId,
+                        reportId,
+                    },
+                },
+                data: {
+                    voteType,
+                },
+            });
+            await tx.scamReport.update({
+                where: { id: reportId },
+                data: {
+                    upvotes: voteType === 'UPVOTE'
+                        ? { increment: 1 }
+                        : { decrement: 1 },
+                    downvotes: voteType === 'DOWNVOTE'
+                        ? { increment: 1 }
+                        : { decrement: 1 },
+                },
+            });
+        });
+        console.log("voting ended");
+        res.json({ success: true });
+    }
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Something went wrong" });
+    }
+});
+featureRouter.post("/create-report", async (req, res) => {
+    const { formData, token } = req.body;
+    const decodeduser = jwt.verify(token, process.env.JWTSECRET);
+    try {
+        const dbinsert = await client.scamReport.create({
+            data: {
+                title: formData.title,
+                companyName: formData.companyName,
+                description: formData.description,
+                scamPlatform: formData.scamPlatform,
+                contactInfo: formData.scammerContact,
+                evidenceUrl: formData.evidenceUrl,
+                //@ts-ignore
+                userId: decodeduser.userId
+            }
+        });
+        res.status(201).json({
+            messae: "report created successfully "
+        });
+    }
+    catch (error) {
+        res.status(402).json({
+            message: "some error while reporting "
+        });
     }
 });
