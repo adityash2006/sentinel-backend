@@ -165,10 +165,10 @@ featureRouter.post("/vote", async (req, res) => {
                 });
                 const updateData = {};
                 if (voteType === 'UPVOTE') {
-                    updateData.upvotes = { increment: 1 };
+                    updateData.upvotes = { decrement: 1 };
                 }
                 if (voteType === 'DOWNVOTE') {
-                    updateData.downvotes = { increment: 1 };
+                    updateData.downvotes = { decrement: 1 };
                 }
                 await tx.scamReport.update({
                     where: { id: reportId },
